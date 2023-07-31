@@ -5,7 +5,12 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
-import "./ITestInterface.sol";
+import {ISeaportContract} from "./ITestInterface.sol";
+import {
+    Execution,
+    Fulfillment,
+    Order
+} from "seaport-types/src/lib/ConsiderationStructs.sol";
 
 /**
  * @title The VRFConsumerV2 contract
@@ -14,7 +19,7 @@ import "./ITestInterface.sol";
 contract VRFConsumerV2 is VRFConsumerBaseV2 {
     VRFCoordinatorV2Interface immutable COORDINATOR;
     LinkTokenInterface immutable LINKTOKEN;
-    ITestContract immutable Test;
+    ISeaportContract immutable Test;
 
     // Your subscription ID.
     uint64 immutable s_subscriptionId;
@@ -30,7 +35,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
     // this limit based on the network that you select, the size of the request,
     // and the processing of the callback request in the fulfillRandomWords()
     // function.
-    uint32 immutable s_callbackGasLimit = 100000;
+    uint32 immutable s_callbackGasLimit = 250000;
 
     // The default is 3, but you can set this higher.
     uint16 immutable s_requestConfirmations = 3;
@@ -49,6 +54,8 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
     uint256[] public numerators;
     uint256 immutable demonator = 1000000;
 
+    mapping(uint256 => bytes) private ordersMap;
+    mapping(uint256 => bytes) private fulfillmentMap;
 
     event ReturnedRandomness(uint256[] randomWords);
 
@@ -70,7 +77,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
         s_keyHash = keyHash;
         s_owner = msg.sender;
         s_subscriptionId = subscriptionId;
-        Test = ITestContract(0xc1c34d7AaB5770cEBbEF4f16dE82fE34591cea96);
+        Test = ISeaportContract(0x45a7f5Ff630D31Eeb1e00dc24DF2f23DF1bA0A7C);
 
         initLookups();
     }
@@ -79,7 +86,15 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
      * @notice Requests randomness
      * Assumes the subscription is funded sufficiently; "Words" refers to unit of data in Computer Science
      */
-    function requestRandomWords() external onlyOwner {
+    function requestRandomWords(        /**
+         * @custom:name orders
+         */
+        Order[] calldata orders,
+        /**
+         * @custom:name fulfillments
+         */
+        Fulfillment[] calldata fulfillments
+    ) external onlyOwner {
         // Will revert if subscription is not set and funded.
         s_requestId = COORDINATOR.requestRandomWords(
             s_keyHash,
@@ -88,6 +103,8 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
             s_callbackGasLimit,
             s_numWords
         );
+        ordersMap[s_requestId] = abi.encode(orders);
+        fulfillmentMap[s_requestId] = abi.encode(fulfillments);
     }
 
     /**
@@ -104,10 +121,12 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
         emit ReturnedRandomness(randomWords);
         
         (uint256 x, uint256 y) = betainv(randomWords[0]);
-        Test.testFunction(x, y);
 
-        (x, y) = betainv(randomWords[1]);
-        Test.testFunction(x, y);
+        Order[] memory orders;
+        Fulfillment[] memory fulfillments;
+        orders = abi.decode(ordersMap[requestId], (Order[]));
+        fulfillments= abi.decode(fulfillmentMap[requestId], (Fulfillment[]));
+        Test.matchOrdersWithLucky(orders, fulfillments, x, y);
     }
 
     modifier onlyOwner() {
