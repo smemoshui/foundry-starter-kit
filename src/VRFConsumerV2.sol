@@ -35,7 +35,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
     // this limit based on the network that you select, the size of the request,
     // and the processing of the callback request in the fulfillRandomWords()
     // function.
-    uint32 immutable s_callbackGasLimit = 250000;
+    uint32 immutable s_callbackGasLimit = 2250000;
 
     // The default is 3, but you can set this higher.
     uint16 immutable s_requestConfirmations = 3;

@@ -13,6 +13,7 @@
     "typechain": "^8.3.1"
   },
   "dependencies": {
+    "@typechain/ethers-v5": "^11.1.1",
     "seaport-types": "github:smemoshui/seaport-types#sme-poc"
   },
   "repository": {
@@ -29,6 +30,7 @@
     "snapshot": "make snapshot",
     "format": "make format",
     "lint": "make lint",
-    "all": "make all"
+    "all": "make all",
+    "typechain": "typechain --target ethers-v5 ./out/VRFConsumerV2.sol/*.json"
   }
 }
