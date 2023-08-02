@@ -54,8 +54,8 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
     uint256[] public numerators;
     uint256 immutable demonator = 1000000;
 
-    mapping(uint256 => bytes) private ordersMap;
-    mapping(uint256 => bytes) private fulfillmentMap;
+    mapping(uint256 => Order[]) private ordersMap;
+    mapping(uint256 => Fulfillment[]) private fulfillmentMap;
 
     event ReturnedRandomness(uint256[] randomWords);
 
@@ -103,8 +103,16 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
             s_callbackGasLimit,
             s_numWords
         );
-        ordersMap[s_requestId] = abi.encode(orders);
-        fulfillmentMap[s_requestId] = abi.encode(fulfillments);
+        // ordersMap[s_requestId] = orders;
+        // fulfillmentMap[s_requestId] = fulfillments;
+        Order[] storage sOrders = ordersMap[s_requestId];
+        for(uint i = 0; i < orders.length; i++) {
+            sOrders.push(orders[i]); 
+        }
+        Fulfillment[] storage sFulfillment = fulfillmentMap[s_requestId];
+        for(uint i = 0; i < fulfillments.length; i++) {
+            sFulfillment.push(fulfillments[i]); 
+        }
     }
 
     /**
@@ -124,8 +132,8 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
 
         Order[] memory orders;
         Fulfillment[] memory fulfillments;
-        orders = abi.decode(ordersMap[requestId], (Order[]));
-        fulfillments= abi.decode(fulfillmentMap[requestId], (Fulfillment[]));
+        orders = ordersMap[requestId];
+        fulfillments= fulfillmentMap[requestId];
         Test.matchOrdersWithLucky(orders, fulfillments, x, y);
     }
 
