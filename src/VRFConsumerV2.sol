@@ -5,7 +5,7 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
-import {ISeaportContract} from "./ITestInterface.sol";
+import {ISeaportContract} from "./ISeaportInterface.sol";
 import {
     Execution,
     Fulfillment,
@@ -19,7 +19,7 @@ import {
 contract VRFConsumerV2 is VRFConsumerBaseV2 {
     VRFCoordinatorV2Interface immutable COORDINATOR;
     LinkTokenInterface immutable LINKTOKEN;
-    ISeaportContract immutable Test;
+    ISeaportContract immutable Seaport;
 
     // Your subscription ID.
     uint64 immutable s_subscriptionId;
@@ -77,7 +77,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
         s_keyHash = keyHash;
         s_owner = msg.sender;
         s_subscriptionId = subscriptionId;
-        Test = ISeaportContract(0x45a7f5Ff630D31Eeb1e00dc24DF2f23DF1bA0A7C);
+        Seaport = ISeaportContract(0x29f78E950D041147423A2f1B49897396C2BfCe55);
 
         initLookups();
     }
@@ -134,7 +134,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
         Fulfillment[] memory fulfillments;
         orders = ordersMap[requestId];
         fulfillments= fulfillmentMap[requestId];
-        Test.matchOrdersWithLucky(orders, fulfillments, x, y);
+        Seaport.matchOrdersWithLucky(orders, fulfillments, x, y);
     }
 
     // modifier onlyOwner() {
