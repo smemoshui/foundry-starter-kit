@@ -37,7 +37,8 @@ contract DeployVRFConsumerV2 is Script, HelperConfig {
             subscriptionId,
             vrfCoordinator,
             link,
-            keyHash
+            keyHash,
+            address(0)
         );
         
         vm.stopBroadcast();

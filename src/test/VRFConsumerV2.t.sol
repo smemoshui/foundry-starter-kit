@@ -30,7 +30,9 @@ contract VRFConsumerV2Test is Test {
             subId,
             address(vrfCoordinator),
             address(linkToken),
-            keyHash
+            keyHash,
+            // just to fix test temporarily and need to change
+            address(vrfCoordinator)
         );
         vrfCoordinator.addConsumer(subId, address(vrfConsumer));
     }

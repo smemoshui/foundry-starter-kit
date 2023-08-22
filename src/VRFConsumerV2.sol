@@ -9,14 +9,18 @@ import {ISeaportContract} from "./ISeaportInterface.sol";
 import {
     Execution,
     Fulfillment,
-    Order
+    Order,
+    ReceivedItem
 } from "seaport-types/src/lib/ConsiderationStructs.sol";
-
+import {
+    AccumulatorDisarmed
+} from "seaport-types/src/lib/ConsiderationConstants.sol";
+import {Executor} from "seaport-core/lib/Executor.sol";
 /**
  * @title The VRFConsumerV2 contract
  * @notice A contract that gets random values from Chainlink VRF V2
  */
-contract VRFConsumerV2 is VRFConsumerBaseV2 {
+contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
     VRFCoordinatorV2Interface immutable COORDINATOR;
     LinkTokenInterface immutable LINKTOKEN;
     ISeaportContract immutable Seaport;
@@ -70,8 +74,10 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
         uint64 subscriptionId,
         address vrfCoordinator,
         address link,
-        bytes32 keyHash
-    ) VRFConsumerBaseV2(vrfCoordinator) {
+        bytes32 keyHash,
+        address conduitController
+    ) VRFConsumerBaseV2(vrfCoordinator)
+      Executor(conduitController) {
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
         LINKTOKEN = LinkTokenInterface(link);
         s_keyHash = keyHash;
@@ -113,6 +119,26 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
         for(uint i = 0; i < fulfillments.length; i++) {
             sFulfillment.push(fulfillments[i]); 
         }
+    }
+
+        /**
+     * @notice Requests randomness
+     * Assumes the subscription is funded sufficiently; "Words" refers to unit of data in Computer Science
+     */
+    function transferPremium(        /**
+         * @custom:name orders
+         */
+        Order[] calldata orders
+    ) external {
+        ReceivedItem memory premium;
+        premium.itemType = orders[0].parameters.consideration[0].itemType;
+        premium.token = orders[0].parameters.consideration[0].token;
+        premium.identifier = orders[0].parameters.consideration[0].identifierOrCriteria;
+        premium.recipient = orders[0].parameters.consideration[0].recipient;
+        premium.amount += orders[0].parameters.consideration[0].startAmount;
+        bytes memory accumulator = new bytes(AccumulatorDisarmed);
+        _transfer(premium, orders[1].parameters.offerer, orders[1].parameters.conduitKey, accumulator);
+        _triggerIfArmed(accumulator);
     }
 
     /**

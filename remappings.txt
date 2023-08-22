@@ -6,3 +6,4 @@ forge-std/=lib/forge-std/src/
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
 @rari-capital/solmate=lib/solmate/
 seaport-types/=lib/seaport-types/
+seaport-cores/=lib/seaport-core/
