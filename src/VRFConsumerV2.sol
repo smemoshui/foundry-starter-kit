@@ -39,7 +39,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
     // this limit based on the network that you select, the size of the request,
     // and the processing of the callback request in the fulfillRandomWords()
     // function.
-    uint32 immutable s_callbackGasLimit = 500000;
+    uint32 immutable s_callbackGasLimit = 1000000;
 
     // The default is 3, but you can set this higher.
     uint16 immutable s_requestConfirmations = 3;
@@ -57,9 +57,6 @@ contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
     uint256 immutable precision = 1000;
     uint256[] public numerators;
     uint256 immutable demonator = 10000;
-
-    mapping(uint256 => Order[]) private ordersMap;
-    mapping(uint256 => Fulfillment[]) private fulfillmentMap;
 
     event ReturnedRandomness(uint256[] randomWords);
 
@@ -83,7 +80,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
         s_keyHash = keyHash;
         s_owner = msg.sender;
         s_subscriptionId = subscriptionId;
-        Seaport = ISeaportContract(0x9c1687C953Fff856e244A152995B96e569C4762A);
+        Seaport = ISeaportContract(0x1eb1858BAE239a80e13F02B67dec7c9243944AB4);
 
         initLookups();
     }
@@ -92,15 +89,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
      * @notice Requests randomness
      * Assumes the subscription is funded sufficiently; "Words" refers to unit of data in Computer Science
      */
-    function requestRandomWords(        /**
-         * @custom:name orders
-         */
-        Order[] calldata orders,
-        /**
-         * @custom:name fulfillments
-         */
-        Fulfillment[] calldata fulfillments
-    ) external {
+    function requestRandomWords() external returns (uint256) {
         // Will revert if subscription is not set and funded.
         s_requestId = COORDINATOR.requestRandomWords(
             s_keyHash,
@@ -109,37 +98,28 @@ contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
             s_callbackGasLimit,
             s_numWords
         );
-        // ordersMap[s_requestId] = orders;
-        // fulfillmentMap[s_requestId] = fulfillments;
-        Order[] storage sOrders = ordersMap[s_requestId];
-        for(uint i = 0; i < orders.length; i++) {
-            sOrders.push(orders[i]); 
-        }
-        Fulfillment[] storage sFulfillment = fulfillmentMap[s_requestId];
-        for(uint i = 0; i < fulfillments.length; i++) {
-            sFulfillment.push(fulfillments[i]); 
-        }
+        return s_requestId;
     }
 
-        /**
-     * @notice Requests randomness
-     * Assumes the subscription is funded sufficiently; "Words" refers to unit of data in Computer Science
-     */
-    function transferPremium(        /**
-         * @custom:name orders
-         */
-        Order[] calldata orders
-    ) external {
-        ReceivedItem memory premium;
-        premium.itemType = orders[0].parameters.consideration[0].itemType;
-        premium.token = orders[0].parameters.consideration[0].token;
-        premium.identifier = orders[0].parameters.consideration[0].identifierOrCriteria;
-        premium.recipient = orders[0].parameters.consideration[0].recipient;
-        premium.amount += orders[0].parameters.consideration[0].startAmount;
-        bytes memory accumulator = new bytes(AccumulatorDisarmed);
-        _transfer(premium, orders[1].parameters.offerer, orders[1].parameters.conduitKey, accumulator);
-        _triggerIfArmed(accumulator);
-    }
+    //     /**
+    //  * @notice Requests randomness
+    //  * Assumes the subscription is funded sufficiently; "Words" refers to unit of data in Computer Science
+    //  */
+    // function transferPremium(        /**
+    //      * @custom:name orders
+    //      */
+    //     Order[] calldata orders
+    // ) external {
+    //     ReceivedItem memory premium;
+    //     premium.itemType = orders[0].parameters.consideration[0].itemType;
+    //     premium.token = orders[0].parameters.consideration[0].token;
+    //     premium.identifier = orders[0].parameters.consideration[0].identifierOrCriteria;
+    //     premium.recipient = orders[0].parameters.consideration[0].recipient;
+    //     premium.amount += orders[0].parameters.consideration[0].startAmount;
+    //     bytes memory accumulator = new bytes(AccumulatorDisarmed);
+    //     _transfer(premium, orders[1].parameters.offerer, orders[1].parameters.conduitKey, accumulator);
+    //     _triggerIfArmed(accumulator);
+    // }
 
     /**
      * @notice Callback function used by VRF Coordinator
@@ -153,14 +133,8 @@ contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
     {
         s_randomWords = randomWords;
         emit ReturnedRandomness(randomWords);
-        
         (uint256 x, uint256 y) = betainv(randomWords[0]);
-
-        Order[] memory orders;
-        Fulfillment[] memory fulfillments;
-        orders = ordersMap[requestId];
-        fulfillments= fulfillmentMap[requestId];
-        Seaport.matchOrdersWithLucky(orders, fulfillments, x, y);
+        Seaport.execute(requestId, x, y);
     }
 
     // modifier onlyOwner() {
