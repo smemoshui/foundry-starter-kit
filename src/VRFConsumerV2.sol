@@ -16,11 +16,12 @@ import {
     AccumulatorDisarmed
 } from "seaport-types/src/lib/ConsiderationConstants.sol";
 import {Executor} from "seaport-core/lib/Executor.sol";
+import "hardhat/console.sol";
 /**
  * @title The VRFConsumerV2 contract
  * @notice A contract that gets random values from Chainlink VRF V2
  */
-contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
+contract VRFConsumerV2 is VRFConsumerBaseV2 {
     VRFCoordinatorV2Interface immutable COORDINATOR;
     LinkTokenInterface immutable LINKTOKEN;
     ISeaportContract immutable Seaport;
@@ -75,8 +76,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
         address link,
         bytes32 keyHash,
         address conduitController
-    ) VRFConsumerBaseV2(vrfCoordinator)
-      Executor(conduitController) {
+    ) VRFConsumerBaseV2(vrfCoordinator) {
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
         LINKTOKEN = LinkTokenInterface(link);
         s_keyHash = keyHash;
@@ -109,15 +109,19 @@ contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
         );
 
         premium.amount = calculatePremiumAmount(startAmount, endAmount, limit);
-        bytes memory accumulator = new bytes(AccumulatorDisarmed);
-        _transfer(premium, offerer, conduitKey, accumulator);
-        _triggerIfArmed(accumulator);
+        // bytes memory accumulator = new bytes(AccumulatorDisarmed);
+        // _transfer(premium, offerer, conduitKey, accumulator);
+        // _triggerIfArmed(accumulator);
         limits[s_requestId] = limit;
         return s_requestId;
     }
 
     function calculatePremiumAmount(uint256 startAmount, uint256 endAmount, uint256 limit) public returns (uint256 amount) {
         uint256 diff = (demonator - numerators[limit]) * (endAmount - startAmount) * limit;
+        console.log(
+            "diff is %s",
+            diff
+        );
         uint256 local_precision = precision;
         uint256 local_demonator = demonator;
         assembly {
