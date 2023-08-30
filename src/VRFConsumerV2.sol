@@ -20,7 +20,7 @@ import {Executor} from "seaport-core/lib/Executor.sol";
  * @title The VRFConsumerV2 contract
  * @notice A contract that gets random values from Chainlink VRF V2
  */
-contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
+contract VRFConsumerV2 is VRFConsumerBaseV2 {
     VRFCoordinatorV2Interface immutable COORDINATOR;
     LinkTokenInterface immutable LINKTOKEN;
     ISeaportContract immutable Seaport;
@@ -75,8 +75,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
         address link,
         bytes32 keyHash,
         address conduitController
-    ) VRFConsumerBaseV2(vrfCoordinator)
-      Executor(conduitController) {
+    ) VRFConsumerBaseV2(vrfCoordinator) {
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
         LINKTOKEN = LinkTokenInterface(link);
         s_keyHash = keyHash;
@@ -116,8 +115,8 @@ contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
         return s_requestId;
     }
 
-    function calculatePremiumAmount(uint256 startAmount, uint256 endAmount, uint256 limit) internal returns (uint256 amount) {
-        uint256 diff = (precision -limit) * (endAmount - startAmount) * numerators[limit];
+    function calculatePremiumAmount(uint256 startAmount, uint256 endAmount, uint256 limit) public returns (uint256 amount) {
+        uint256 diff = (demonator - numerators[limit]) * (endAmount - startAmount) * limit;
         uint256 local_precision = precision;
         uint256 local_demonator = demonator;
         assembly {

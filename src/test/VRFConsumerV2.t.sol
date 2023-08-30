@@ -37,11 +37,10 @@ contract VRFConsumerV2Test is Test {
         vrfCoordinator.addConsumer(subId, address(vrfConsumer));
     }
 
-    // function testCanRequestRandomness() public {
-    //     uint256 startingRequestId = vrfConsumer.s_requestId();
-    //     vrfConsumer.requestRandomWords();
-    //     assertTrue(vrfConsumer.s_requestId() != startingRequestId);
-    // }
+    function testCalculatePremiumAmount() public {
+        uint256 amount = vrfConsumer.calculatePremiumAmount(400000000, 1200000000, 1);
+        assertTrue(amount != 0);
+    }
 
     // function testCanGetRandomResponse() public {
     //     vrfConsumer.requestRandomWords();
