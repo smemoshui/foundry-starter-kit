@@ -38,7 +38,7 @@ contract VRFConsumerV2Test is Test {
     }
 
     function testCalculatePremiumAmount() public {
-        uint256 amount = vrfConsumer.calculatePremiumAmount(400000000, 1200000000, 1);
+        uint256 amount = vrfConsumer.calculatePremiumAmount(400000000, 1200000000, 1000);
         assertTrue(amount != 0);
     }
 

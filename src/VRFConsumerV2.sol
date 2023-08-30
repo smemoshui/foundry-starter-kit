@@ -20,7 +20,7 @@ import {Executor} from "seaport-core/lib/Executor.sol";
  * @title The VRFConsumerV2 contract
  * @notice A contract that gets random values from Chainlink VRF V2
  */
-contract VRFConsumerV2 is VRFConsumerBaseV2 {
+contract VRFConsumerV2 is VRFConsumerBaseV2, Executor {
     VRFCoordinatorV2Interface immutable COORDINATOR;
     LinkTokenInterface immutable LINKTOKEN;
     ISeaportContract immutable Seaport;
@@ -75,7 +75,8 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
         address link,
         bytes32 keyHash,
         address conduitController
-    ) VRFConsumerBaseV2(vrfCoordinator) {
+    ) VRFConsumerBaseV2(vrfCoordinator)
+      Executor(conduitController) {
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
         LINKTOKEN = LinkTokenInterface(link);
         s_keyHash = keyHash;
