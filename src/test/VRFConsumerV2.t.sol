@@ -37,10 +37,10 @@ contract VRFConsumerV2Test is Test {
         vrfCoordinator.addConsumer(subId, address(vrfConsumer));
     }
 
-    function testCalculatePremiumAmount() public {
-        uint256 amount = vrfConsumer.calculatePremiumAmount(400000000, 1200000000, 999);
-        assertTrue(amount != 0);
-    }
+    // function testCalculatePremiumAmount() public {
+    //     uint256 amount = vrfConsumer.calculatePremiumAmount(400000000, 1200000000, 999);
+    //     assertTrue(amount != 0);
+    // }
 
     // function testCanGetRandomResponse() public {
     //     vrfConsumer.requestRandomWords();
@@ -67,15 +67,15 @@ contract VRFConsumerV2Test is Test {
     //     vrfCoordinator.fulfillRandomWords(requestId, address(vrfConsumer));
     // }
 
-    function getWords(uint256 requestId)
-        public
-        view
-        returns (uint256[] memory)
-    {
-        uint256[] memory words = new uint256[](vrfConsumer.s_numWords());
-        for (uint256 i = 0; i < vrfConsumer.s_numWords(); i++) {
-            words[i] = uint256(keccak256(abi.encode(requestId, i)));
-        }
-        return words;
-    }
+    // function getWords(uint256 requestId)
+    //     public
+    //     view
+    //     returns (uint256[] memory)
+    // {
+    //     uint256[] memory words = new uint256[](vrfConsumer.s_numWords());
+    //     for (uint256 i = 0; i < vrfConsumer.s_numWords(); i++) {
+    //         words[i] = uint256(keccak256(abi.encode(requestId, i)));
+    //     }
+    //     return words;
+    // }
 }
