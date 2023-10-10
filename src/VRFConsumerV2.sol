@@ -58,7 +58,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
     uint256[] public numerators;
     uint256 immutable demonator = 10000;
 
-    event ReturnedRandomness(uint256[] randomWords);
+    event ReturnedRandomness(uint256 requestId, uint256[] randomWords);
 
     /**
      * @notice Constructor inherits VRFConsumerBaseV2
@@ -111,9 +111,7 @@ contract VRFConsumerV2 is VRFConsumerBaseV2 {
         override
     {
         s_randomWords = randomWords;
-        emit ReturnedRandomness(randomWords);
-        // (uint256 x, uint256 y) = betainv(randomWords[0], requestId);
-        // Seaport.execute(requestId, x, y);
+        emit ReturnedRandomness(requestId, randomWords);
     }
 
     // modifier onlyOwner() {
